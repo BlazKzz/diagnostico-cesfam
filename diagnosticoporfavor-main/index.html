@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnóstico, por favor — Prototipo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Quicksand:wght=500;600;700&family=Space+Mono:wght=400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  
+<div id="main-menu" class="main-menu">
+  <div class="menu-content">
+    <p class="menu-presents">CESFAM DE ANCUD PRESENTA</p>
+    <h1 class="game-title">Diagnóstico,<br>por favor</h1>
+    <p class="game-subtitle">Un juego de decisiones clínicas sobre el uso responsable de antibióticos.</p>
+    
+    <div class="menu-inputs">
+      <input type="text" id="player-name-input" class="name-input" placeholder="Ingresa tu nombre..." autocomplete="off" maxlength="20">
+      
+      <div class="gender-selection">
+        <label class="gender-label">
+          <input type="radio" name="gender" id="gender-m" value="Doctor" checked> 👨‍⚕️ Doctor
+        </label>
+        <label class="gender-label">
+          <input type="radio" name="gender" id="gender-f" value="Doctora"> 👩‍⚕️ Doctora
+        </label>
+      </div>
+
+      <button id="btn-start-game" class="btn-start">
+        <span class="btn-letter">A</span> Comenzar jornada
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="prep-screen" class="prep-screen hidden">
+  <div class="prep-card">
+    <h2 class="prep-title">Preparando jornada</h2>
+    <p class="prep-subtitle">Lee estos objetivos antes de atender al primer paciente.</p>
+    
+    <div class="prep-objective">
+      <span class="prep-num">01</span> Atiende correctamente a 10 pacientes para ganar la jornada.
+    </div>
+    <div class="prep-objective">
+      <span class="prep-num">02</span> Indica antibióticos solo cuando existan signos de infección bacteriana.
+    </div>
+    <div class="prep-objective">
+      <span class="prep-num">03</span> Cuida la salud del paciente, la reputación del CESFAM, la resistencia bacteriana y el presupuesto.
+    </div>
+
+    <div class="loading-bar-container">
+      <div class="loading-bar-fill" id="loading-bar"></div>
+    </div>
+  </div>
+</div>
+
+<div class="game">
+  <header class="nameplate">
+    <div>
+      <h1>CESFAM DE ANCUD</h1>
+      <div class="subtitle" id="doctor-subtitle">Médico: Esperando nombre...</div>
+    </div>
+    
+    <div style="display: flex; gap: 10px;">
+      <button id="btn-pause" class="btn-info" style="background-color: #fca311; border-color: #d68910; color: white;">⏸️ Pausa</button>
+      <button id="btn-info" class="btn-info">ℹ️ Información</button>
+    </div>
+
+    <div class="progreso">
+      Caso <b id="hud-case-num">1</b> &nbsp;|&nbsp; Atendidos OK: <b id="hud-correct">0</b>/<span id="hud-goal">10</span>
+    </div>
+  </header>
+
+  <section class="stats">
+    <div class="stat">
+      <div class="stat-label"><span>Salud paciente</span><span class="stat-value"><span id="val-salud">0</span>/<span id="max-salud">80</span></span></div>
+      <div class="bar-track"><div class="bar-fill salud" id="bar-salud" style="width:0%"></div></div>
+    </div>
+    <div class="stat">
+      <div class="stat-label"><span>Resist. bacteriana</span><span class="stat-value"><span id="val-resistencia">0</span>/10</span></div>
+      <div class="bar-track"><div class="bar-fill resistencia" id="bar-resistencia" style="width:0%"></div></div>
+    </div>
+    <div class="stat">
+      <div class="stat-label"><span>Reputación CESFAM</span><span class="stat-value"><span id="val-reputacion">25</span>/30</span></div>
+      <div class="bar-track"><div class="bar-fill reputacion" id="bar-reputacion" style="width:0%"></div></div>
+    </div>
+    <div class="stat">
+      <div class="stat-label"><span>Presupuesto</span><span class="stat-value">$<span id="val-presupuesto">100</span></span></div>
+      <div class="bar-track"><div class="bar-fill presupuesto" id="bar-presupuesto" style="width:0%"></div></div>
+    </div>
+  </section>
+
+  <main class="desk">
+    <div class="case-tag" id="case-tag">CASO 0</div>
+
+    <div class="desk-grid">
+      <div class="patient-card">
+        <div class="avatar">
+          <img id="patient-image" src="" alt="Paciente">
+        </div>
+        <div class="patient-text">
+          <h3>Paciente dice</h3>
+          <p id="patient-text">—</p>
+        </div>
+      </div>
+
+      <div class="ficha-card">
+        <ul id="ficha-list"></ul>
+        <div class="patient-health">
+          <div class="stat-label"><span>Salud de este paciente</span><span id="val-salud-paciente-txt">—</span></div>
+          <div class="bar-track"><div class="bar-fill salud" id="bar-salud-paciente" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-box" id="result-box">
+      <div class="stamp" id="stamp">ATENDIDO</div>
+      <p class="doctor-line" id="result-doctor"></p>
+      <p class="patient-line" id="result-patient"></p>
+      <ul id="result-list"></ul>
+      <p class="learning" id="result-learning" style="display:none"><b>Aprendizaje:</b> <span id="result-learning-text"></span></p>
+    </div>
+
+    <div class="options" id="options"></div>
+
+    <div class="controls">
+      <div>
+        <button class="btn btn-trampa" id="btn-trampa">Pasar al siguiente paciente sin atender</button>
+        <br>
+        <button class="manual-toggle" id="manual-toggle">Ver manual del médico</button>
+      </div>
+      <button class="btn btn-next" id="btn-next">Llamar al siguiente paciente →</button>
+    </div>
+
+    <div class="manual" id="manual">
+      <h4>Errores comunes con antibióticos</h4>
+      <ul>
+        <li>Automedicarse.</li>
+        <li>Compartir antibióticos con otras personas.</li>
+        <li>Suspender el tratamiento antes de tiempo.</li>
+        <li>Consumir alcohol durante el tratamiento.</li>
+        <li>Tomar dosis incorrectas.</li>
+      </ul>
+      <h4>Signos de infección bacteriana</h4>
+      <ul>
+        <li>Fiebre persistente.</li>
+        <li>Presencia de pus.</li>
+        <li>Inflamación localizada importante.</li>
+      </ul>
+    </div>
+  </main>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="overlay-card" id="overlay-card"> 
+    <h2 id="overlay-title">Título</h2>
+    <p id="overlay-text">Texto</p>
+    <button class="btn" id="btn-restart">Volver a jugar</button>
+  </div>
+</div>
+
+<div class="overlay" id="info-overlay">
+  <div class="overlay-card info-card">
+    <button class="close-btn" id="btn-close-info">✖</button>
+    <h2>Manual de Bacterias y Antibióticos</h2>
+    <div class="info-images">
+      <img src="imagenes/manual1.jpeg" alt="Manual 1">
+      <img src="imagenes/manual2.png" alt="Manual 2">
+      <img src="imagenes/manual3.jpeg" alt="Manual 3">
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="pause-overlay">
+  <div class="overlay-card info-card" style="max-width: 400px; text-align: center; padding-top: 25px;">
+    <button class="close-btn" id="btn-close-pause">✖</button>
+    <h2 style="font-family: 'Press Start 2P', cursive; font-size: 1.2rem; margin-bottom: 25px; color: #234252;">EN PAUSA</h2>
+    
+    <div style="margin-bottom: 25px; text-align: left;">
+      <label for="volume-slider" style="font-weight: bold; color: #2F2A22;">🔊 Volumen del juego:</label>
+      <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.4" style="width: 100%; margin-top: 10px; cursor: pointer;">
+    </div>
+
+    <button class="btn" id="btn-change-song" style="width: 100%; background-color: #CE9234; color: white; margin-bottom: 15px;">🎵 Cambiar Canción</button>
+    <button class="btn" id="btn-resume" style="width: 100%; background-color: #4F8B6C; color: white;">▶ Reanudar Juego</button>
+  </div>
+</div>
+
+<script type="module">
+  import { CASES } from './data/cases.js';
+
+  const RANGES = { resistenciaMax: 10, reputacionMax: 30, reputacionInicial: 25, presupuestoInicial: 100, metaVictoria: 10 };
+  let state = { resistencia: 0, reputacion: RANGES.reputacionInicial, presupuesto: RANGES.presupuestoInicial, caseIndex: 0, attended: 0, correctCount: 0, saludPaciente: 0, maxSaludPaciente: 80, resolved: false, gameOver: false };
+
+  // --- CONTROL DE AUDIO MULTI-CANCIÓN ---
+  // Aquí agregas todas las canciones que quieras que roden durante el juego
+  const playlist = [
+    new Audio("audio/furniture_shop(musica del gameplay).ogg"),
+    new Audio("audio/8bit Bossa(musica del menu).mp3"),
+    new Audio("audio/two_left_socks )musica de menu).ogg"), 
+    new Audio("audio/Buy Something! (Radio Edit)(musica del juego).mp3"),
+    new Audio("audio/ChamplooEndingWithIntroLowPass(musica final de la tarde).mp3")
+    // Para agregar más: , new Audio("audio/otra_cancion.mp3")
+  ];
+  let currentTrackIndex = 0;
+
+  const sonidos = {
+    menu: new Audio("audio/8bit Bossa(musica del menu).mp3"),
+    victoria: new Audio("audio/Komiku_-_11_-_Trop_la_win(dia completado).mp3"),
+    derrota: new Audio("audio/the_end_piano (musica de derrota).mp3"),
+    timbre: new Audio("audio/Timbre 1.wav"),
+    bell: new Audio("audio/bell (acierto).wav"),
+    pop: new Audio("audio/pop (seleccion).ogg"),
+    error: new Audio("audio/error (fallo).wav"),
+    // --- NUEVA CANCIÓN PARA EL MANUAL ---
+    explicacion: new Audio("audio/Children's March Theme(musica de explicacion.mp3")
+  };
+
+  // Configurar volumen y loops iniciales
+  let globalVolume = 0.4;
+  sonidos.menu.loop = true;
+  sonidos.menu.volume = globalVolume;
+  sonidos.explicacion.loop = true; // Hace que la música del manual se repita
+  playlist.forEach(track => { track.loop = true; track.volume = globalVolume; });
+
+  function iniciarMusicaGameplay() {
+    if (playlist[currentTrackIndex].paused && !state.gameOver) {
+      playlist[currentTrackIndex].play().catch(e => console.log("Audio en espera de interacción"));
+    }
+  }
+
+  function detenerTodosLosSonidos() {
+    Object.values(sonidos).forEach(s => { s.pause(); s.currentTime = 0; });
+    playlist.forEach(t => { t.pause(); t.currentTime = 0; });
+  }
+
+  const el = (id) => document.getElementById(id);
+  const dom = {
+    caseTag: el("case-tag"), patientText: el("patient-text"), fichaList: el("ficha-list"), optionsBox: el("options"), resultBox: el("result-box"),
+    stamp: el("stamp"), resultDoctor: el("result-doctor"), resultPatient: el("result-patient"), resultList: el("result-list"),
+    resultLearning: el("result-learning"), resultLearningText: el("result-learning-text"), btnNext: el("btn-next"), btnTrampa: el("btn-trampa"),
+    hudCaseNum: el("hud-case-num"), hudCorrect: el("hud-correct"), hudGoal: el("hud-goal"), overlay: el("overlay"), overlayCard: el("overlay-card"),
+    overlayTitle: el("overlay-title"), overlayText: el("overlay-text"), manual: el("manual"), manualToggle: el("manual-toggle"),
+    btnInfo: el("btn-info"), infoOverlay: el("info-overlay"), btnCloseInfo: el("btn-close-info"),
+    btnPause: el("btn-pause"), pauseOverlay: el("pause-overlay"), btnClosePause: el("btn-close-pause"), btnResume: el("btn-resume"),
+    btnChangeSong: el("btn-change-song"), volumeSlider: el("volume-slider"),
+    prepScreen: el("prep-screen"), loadingBar: el("loading-bar"), mainMenu: el("main-menu"), btnStartGame: el("btn-start-game"),
+    playerNameInput: el("player-name-input"), genderM: el("gender-m"), genderF: el("gender-f")
+  };
+
+  // --- MENÚ PRINCIPAL Y VALIDACIÓN ---
+  document.body.addEventListener('click', function startMenuMusic() {
+    if (!dom.mainMenu.classList.contains("hidden") && sonidos.menu.paused) {
+       sonidos.menu.play().catch(e => console.log("Esperando interacción"));
+    }
+    document.body.removeEventListener('click', startMenuMusic);
+  }, { once: true });
+
+  dom.btnStartGame.onclick = () => {
+    sonidos.pop.currentTime = 0;
+    sonidos.pop.play().catch(e => console.log("Audio bloqueado"));
+    
+    const inputName = dom.playerNameInput.value.trim();
+    
+    // VALIDACIÓN: Evitar que avance si no hay nombre
+    if (inputName === "") {
+      alert("⚠️ Por favor, ingresa tu nombre antes de comenzar el turno.");
+      dom.playerNameInput.focus();
+      return;
+    }
+
+    const title = dom.genderF.checked ? "Doctora" : "Doctor";
+    
+    dom.mainMenu.classList.add("hidden");
+    sonidos.menu.pause();
+
+    dom.prepScreen.classList.remove("hidden");
+    dom.loadingBar.classList.add("animate");
+
+    setTimeout(() => {
+      document.getElementById("doctor-subtitle").textContent = `${title}: ${inputName}`;
+      dom.prepScreen.classList.add("hidden");
+      iniciarMusicaGameplay();
+    }, 4000); 
+  };
+
+  // --- MENÚ DE PAUSA ---
+  function openPauseMenu() {
+    sonidos.pop.currentTime = 0; sonidos.pop.play().catch(e=>{});
+    dom.pauseOverlay.classList.add("show");
+  }
+
+  function closePauseMenu() {
+    sonidos.pop.currentTime = 0; sonidos.pop.play().catch(e=>{});
+    dom.pauseOverlay.classList.remove("show");
+  }
+
+  dom.btnPause.onclick = openPauseMenu;
+  dom.btnClosePause.onclick = closePauseMenu;
+  dom.btnResume.onclick = closePauseMenu;
+
+  // Control de Volumen en tiempo real
+  dom.volumeSlider.oninput = (e) => {
+    globalVolume = parseFloat(e.target.value);
+    Object.values(sonidos).forEach(s => s.volume = globalVolume);
+    playlist.forEach(t => t.volume = globalVolume);
+  };
+
+  // Cambiar de canción
+  dom.btnChangeSong.onclick = () => {
+    sonidos.pop.currentTime = 0; sonidos.pop.play().catch(e=>{});
+    playlist[currentTrackIndex].pause();
+    currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+    playlist[currentTrackIndex].currentTime = 0;
+    playlist[currentTrackIndex].play().catch(e => console.log("Audio bloqueado"));
+  };
+
+  // --- MENÚ INFO ---
+  dom.btnInfo.onclick = () => { 
+    sonidos.pop.currentTime = 0; 
+    sonidos.pop.play().catch(e=>{}); 
+    dom.infoOverlay.classList.add("show"); 
+    
+    // Pausar la música de fondo del juego y reproducir la del manual
+    playlist[currentTrackIndex].pause();
+    sonidos.explicacion.play().catch(e => console.log("Audio bloqueado"));
+  };
+
+  dom.btnCloseInfo.onclick = () => { 
+    sonidos.pop.currentTime = 0; 
+    sonidos.pop.play().catch(e=>{}); 
+    dom.infoOverlay.classList.remove("show"); 
+    
+    // Pausar la música del manual y reanudar la del juego
+    sonidos.explicacion.pause();
+    iniciarMusicaGameplay(); 
+  };
+  // --- MOTOR DEL JUEGO ---
+  function getCurrentCase(){ return CASES[state.caseIndex]; }
+  function clamp(value, min, max){ return Math.max(min, Math.min(max, value)); }
+
+  function applyGlobalEffects(effects){
+    if (!effects) return;
+    if (effects.resistencia) state.resistencia = clamp(state.resistencia + effects.resistencia, 0, RANGES.resistenciaMax);
+    if (effects.reputacion)  state.reputacion  = clamp(state.reputacion  + effects.reputacion,  0, RANGES.reputacionMax);
+    if (effects.presupuesto) state.presupuesto = clamp(state.presupuesto + effects.presupuesto, 0, 999);
+    if (effects.salud)       state.saludPaciente = clamp(state.saludPaciente + effects.salud, 0, state.maxSaludPaciente);
+  }
+
+  function renderStats(){
+    el("val-salud").textContent = state.saludPaciente;
+    el("max-salud").textContent = state.maxSaludPaciente;
+    el("bar-salud").style.width = (state.saludPaciente / state.maxSaludPaciente * 100) + "%";
+    el("val-resistencia").textContent = state.resistencia;
+    el("bar-resistencia").style.width = (state.resistencia / RANGES.resistenciaMax * 100) + "%";
+    el("val-reputacion").textContent = state.reputacion;
+    el("bar-reputacion").style.width = (state.reputacion / RANGES.reputacionMax * 100) + "%";
+    el("val-presupuesto").textContent = state.presupuesto;
+    el("bar-presupuesto").style.width = clamp(state.presupuesto, 0, 100) + "%";
+    el("val-salud-paciente-txt").textContent = state.saludPaciente + "/" + state.maxSaludPaciente;
+    el("bar-salud-paciente").style.width = (state.saludPaciente / state.maxSaludPaciente * 100) + "%";
+    dom.hudCaseNum.textContent = state.attended + 1;
+    dom.hudCorrect.textContent = state.correctCount;
+    dom.hudGoal.textContent = RANGES.metaVictoria;
+  }
+
+  function loadCase(){
+    if (state.gameOver) return;
+    const c = getCurrentCase();
+    state.saludPaciente = c.initialSalud;
+    state.maxSaludPaciente = c.maxSalud;
+    state.resolved = false;
+    dom.caseTag.textContent = "CASO " + c.id;
+    dom.patientText.textContent = c.patientText;
+    el("patient-image").src = c.image || "";
+    dom.fichaList.innerHTML = c.fichaItems.map(t => "<li>" + t + "</li>").join("");
+    dom.resultBox.classList.remove("show");
+    dom.stamp.classList.remove("play");
+    dom.resultLearning.style.display = "none";
+    dom.btnNext.classList.remove("show");
+    dom.btnTrampa.style.display = "inline-block";
+    renderStats();
+    renderMainOptions(c);
+  }
+
+  function renderMainOptions(c){
+    dom.optionsBox.innerHTML = "";
+    c.options.forEach(opt => {
+      const btn = document.createElement("button");
+      btn.className = "option-btn";
+      btn.innerHTML = '<span class="opt-letter">' + opt.id + '</span>' + opt.label;
+      btn.onclick = () => handleMainOption(c, opt);
+      dom.optionsBox.appendChild(btn);
+    });
+  }
+
+  function disableOptionButtons(){
+    dom.optionsBox.querySelectorAll(".option-btn").forEach(b => b.disabled = true);
+  }
+
+  function handleMainOption(c, opt){
+    if (state.resolved) return;
+    sonidos.pop.currentTime = 0; sonidos.pop.play().catch(e=>{});
+    iniciarMusicaGameplay(); 
+    disableOptionButtons();
+    applyGlobalEffects(opt.effects);
+    if (opt.exam){ showExamResult(c, opt); } else { finalizeCase(opt.doctorLine, opt.patientLine, opt.resultLines, opt.correct, c.learning); }
+    renderStats();
+  }
+
+  function showExamResult(c, opt){
+    dom.resultBox.classList.add("show");
+    dom.stamp.classList.remove("play");
+    dom.resultDoctor.textContent = opt.doctorLine || "";
+    dom.resultPatient.textContent = opt.patientLine || "";
+    dom.resultList.innerHTML = opt.exam.resultLines.map(t => "<li>" + t + "</li>").join("");
+    dom.resultLearning.style.display = "none";
+    dom.optionsBox.innerHTML = "";
+    const note = document.createElement("p");
+    note.style.fontSize = "13px"; note.style.color = "var(--ink-soft)"; note.style.margin = "0 0 6px"; note.textContent = "Con estos resultados, ¿qué hace ahora?";
+    dom.optionsBox.appendChild(note);
+
+    opt.exam.followUp.forEach(fu => {
+      const btn = document.createElement("button");
+      btn.className = "option-btn";
+      btn.innerHTML = '<span class="opt-letter">' + fu.id + '</span>' + fu.label;
+      btn.onclick = () => {
+        sonidos.pop.currentTime = 0; sonidos.pop.play().catch(e=>{});
+        disableOptionButtons(); iniciarMusicaGameplay(); applyGlobalEffects(fu.effects);
+        finalizeCase(fu.doctorLine, fu.patientLine, fu.resultLines, fu.correct, c.learning); renderStats();
+      };
+      dom.optionsBox.appendChild(btn);
+    });
+  }
+
+  function finalizeCase(doctorLine, patientLine, resultLines, correct, learning){
+    state.resolved = true; state.attended += 1; if (correct) state.correctCount += 1;
+    if (correct) { sonidos.bell.currentTime = 0; sonidos.bell.play().catch(e=>{}); } else { sonidos.error.currentTime = 0; sonidos.error.play().catch(e=>{}); }
+    dom.resultBox.classList.add("show");
+    dom.resultDoctor.textContent = doctorLine || ""; dom.resultPatient.textContent = patientLine || "";
+    dom.resultList.innerHTML = (resultLines || []).map(t => "<li>" + t + "</li>").join("");
+    if (learning){ dom.resultLearningText.textContent = learning; dom.resultLearning.style.display = "block"; }
+    dom.stamp.textContent = correct ? "✓ Correcto" : "✗ Revisar";
+    dom.stamp.classList.remove("correcto", "incorrecto"); dom.stamp.classList.add(correct ? "correcto" : "incorrecto");
+    dom.stamp.classList.remove("play"); void dom.stamp.offsetWidth; dom.stamp.classList.add("play");
+    dom.optionsBox.innerHTML = ""; dom.btnTrampa.style.display = "none";
+    if (!checkEndConditions()){ dom.btnNext.classList.add("show"); }
+  }
+
+  function checkEndConditions(){
+    if (state.presupuesto <= 0){ endGame(false, "Sin presupuesto", "El CESFAM se ha quedado sin dinero."); return true; }
+    if (state.reputacion <= 0){ endGame(false, "Centro clausurado", "La reputación del centro llegó a 0."); return true; }
+    if (state.correctCount >= RANGES.metaVictoria){ endGame(true, "¡Victoria!", `Atendiste correctamente a ${state.correctCount} pacientes.`); return true; }
+    if (state.attended >= CASES.length) { endGame(false, "Fin de la jornada", `Atendiste a todos, pero lograste ${state.correctCount} aciertos. Meta: ${RANGES.metaVictoria}.`); return true; }
+    return false;
+  }
+
+  function endGame(won, title, text){
+    state.gameOver = true; detenerTodosLosSonidos();
+    if (won) { sonidos.victoria.play().catch(e=>{}); } else { sonidos.derrota.play().catch(e=>{}); }
+    dom.overlayCard.classList.remove("win", "lose"); dom.overlayCard.classList.add(won ? "win" : "lose");
+    dom.overlayTitle.textContent = title; dom.overlayText.textContent = text; dom.overlay.classList.add("show");
+  }
+
+  function nextCase(){
+    if (state.gameOver) return;
+    sonidos.timbre.currentTime = 0; sonidos.timbre.play().catch(e=>{});
+    iniciarMusicaGameplay(); state.caseIndex += 1; loadCase();
+  }
+
+  function trampaSkip(){
+    if (state.resolved || state.gameOver) return;
+    endGame(false, "Juramento incumplido", "Pasaste al siguiente paciente sin atenderlo.");
+  }
+
+  function restartGame(){
+    detenerTodosLosSonidos();
+    state = { resistencia: 0, reputacion: RANGES.reputacionInicial, presupuesto: RANGES.presupuestoInicial, caseIndex: 0, attended: 0, correctCount: 0, saludPaciente: 0, maxSaludPaciente: 80, resolved: false, gameOver: false };
+    dom.overlay.classList.remove("show"); dom.mainMenu.classList.remove("hidden"); dom.playerNameInput.value = ""; currentTrackIndex = 0;
+    loadCase();
+  }
+
+  dom.btnNext.onclick = nextCase; dom.btnTrampa.onclick = trampaSkip; el("btn-restart").onclick = restartGame;
+  dom.manualToggle.onclick = () => {
+    dom.manual.classList.toggle("show");
+    dom.manualToggle.textContent = dom.manual.classList.contains("show") ? "Ocultar manual del médico" : "Ver manual del médico";
+  };
+
+  loadCase();
+</script>
+</body>
+</html>
