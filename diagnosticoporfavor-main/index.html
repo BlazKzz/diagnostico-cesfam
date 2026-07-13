@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Diagnóstico, por favor — Prototipo</title>
+  <title>Diagnóstico, por favor — CESFAM Simulator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Quicksand:wght=500;600;700&family=Space+Mono:wght=400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  
+
+<!-- PANTALLA DE MENÚ PRINCIPAL -->
 <div id="main-menu" class="main-menu">
   <div class="menu-content">
     <p class="menu-presents">CESFAM DE ANCUD PRESENTA</p>
@@ -19,12 +20,20 @@
     <div class="menu-inputs">
       <input type="text" id="player-name-input" class="name-input" placeholder="Ingresa tu nombre..." autocomplete="off" maxlength="20">
       
+      <!-- Selector de Sexo -->
       <div class="gender-selection">
         <label class="gender-label">
           <input type="radio" name="gender" id="gender-m" value="Doctor" checked> 👨‍⚕️ Doctor
         </label>
         <label class="gender-label">
           <input type="radio" name="gender" id="gender-f" value="Doctora"> 👩‍⚕️ Doctora
+        </label>
+      </div>
+
+      <!-- Modo Hardcore -->
+      <div class="hardcore-selection">
+        <label class="gender-label" style="background: rgba(192, 57, 43, 0.8); border-color: #922b21;">
+          <input type="checkbox" id="hardcore-mode" onchange="if(this.checked) alert('⚠️ CUIDADO: Estás en Modo Hardcore. En este modo:\n\n1. Comienzas con el presupuesto reducido a $50.\n2. Los errores de reputación penalizan el doble.\n\n¡Buena suerte, la necesitarás!');"> ☠️ Modo Hardcore
         </label>
       </div>
 
@@ -35,19 +44,20 @@
   </div>
 </div>
 
+<!-- PANTALLA DE CARGA -->
 <div id="prep-screen" class="prep-screen hidden">
   <div class="prep-card">
     <h2 class="prep-title">Preparando jornada</h2>
     <p class="prep-subtitle">Lee estos objetivos antes de atender al primer paciente.</p>
     
     <div class="prep-objective">
-      <span class="prep-num">01</span> Atiende correctamente a 10 pacientes para ganar la jornada.
+      <span class="prep-num">01</span> Atiende a 10 pacientes de forma exitosa antes del cierre.
     </div>
     <div class="prep-objective">
-      <span class="prep-num">02</span> Indica antibióticos solo cuando existan signos de infección bacteriana.
+      <span class="prep-num">02</span> Indica antibióticos SOLO en presencia de infección bacteriana.
     </div>
     <div class="prep-objective">
-      <span class="prep-num">03</span> Cuida la salud del paciente, la reputación del CESFAM, la resistencia bacteriana y el presupuesto.
+      <span class="prep-num">03</span> Administra tu Presupuesto y mantén alta la Reputación del centro.
     </div>
 
     <div class="loading-bar-container">
@@ -56,6 +66,7 @@
   </div>
 </div>
 
+<!-- JUEGO PRINCIPAL -->
 <div class="game">
   <header class="nameplate">
     <div>
@@ -63,7 +74,10 @@
       <div class="subtitle" id="doctor-subtitle">Médico: Esperando nombre...</div>
     </div>
     
-    <div style="display: flex; gap: 10px;">
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <!-- RELOJ DE TURNO -->
+      <div class="clock-display">⏱️ <span id="hud-clock">08:00</span></div>
+      <!-- BOTONES -->
       <button id="btn-pause" class="btn-info" style="background-color: #fca311; border-color: #d68910; color: white;">⏸️ Pausa</button>
       <button id="btn-info" class="btn-info">ℹ️ Información</button>
     </div>
@@ -126,12 +140,13 @@
     <div class="options" id="options"></div>
 
     <div class="controls">
-      <div>
-        <button class="btn btn-trampa" id="btn-trampa">Pasar al siguiente paciente sin atender</button>
-        <br>
+      <div class="controls-left">
         <button class="manual-toggle" id="manual-toggle">Ver manual del médico</button>
       </div>
-      <button class="btn btn-next" id="btn-next">Llamar al siguiente paciente →</button>
+      <div class="controls-right">
+        <button class="btn btn-trampa" id="btn-trampa">Pasar al siguiente paciente sin atender</button>
+        <button class="btn btn-next" id="btn-next">Llamar al siguiente paciente →</button>
+      </div>
     </div>
 
     <div class="manual" id="manual">
@@ -153,6 +168,30 @@
   </main>
 </div>
 
+<!-- MODAL DE TUTORIAL (MEMORÁNDUM) -->
+<div class="overlay" id="tutorial-overlay">
+  <div class="overlay-card" style="border: 3px solid #234252; background-color: #FBF7EE; text-align: left; max-width: 550px; padding: 35px;"> 
+    <h2 style="color: #A23A30; font-family: 'Press Start 2P', cursive; font-size: 15px; margin-bottom: 20px; text-align: center; text-decoration: underline;">MEMORÁNDUM OFICIAL</h2>
+    <div style="font-family: 'Space Mono', monospace; font-size: 13px; color: #2F2A22; margin-bottom: 20px; border-bottom: 2px dashed #9C7049; padding-bottom: 15px;">
+      <b>DE:</b> Dirección General CESFAM Ancud<br>
+      <b>PARA:</b> <span id="tutorial-doctor-name">Médico en práctica</span><br>
+      <b>ASUNTO:</b> Protocolos y Riesgo de Clausura
+    </div>
+    <div style="font-size: 14px; font-family: 'Quicksand', sans-serif; line-height: 1.6; margin-bottom: 25px; color: #2F2A22;">
+      <p>Bienvenido/a a su primer día. Las reglas son estrictas:</p>
+      <ul style="padding-left: 20px; margin-top: 10px; margin-bottom: 15px;">
+        <li style="margin-bottom: 8px;">💚 <b>Salud del paciente:</b> Es su prioridad. Cúrelos tomando la decisión correcta.</li>
+        <li style="margin-bottom: 8px;">🦠 <b>Resistencia Bacteriana:</b> Si receta antibióticos innecesarios, las bacterias se harán más fuertes. <i>(Se reinicia por paciente).</i></li>
+        <li style="margin-bottom: 8px;">🏢 <b>Reputación Institucional:</b> Si su reputación baja a cero, <b>clausurarán este recinto</b>.</li>
+        <li style="margin-bottom: 8px;">💰 <b>Presupuesto:</b> Solicitar exámenes cuesta dinero. Úselo sabiamente.</li>
+      </ul>
+      <p>Lea con atención la Ficha Médica y consulte su "Manual del médico" en caso de duda.</p>
+    </div>
+    <button class="btn" id="btn-close-tutorial" style="width: 100%; background-color: #234252; color: white; font-family: 'Press Start 2P', cursive; font-size: 11px; padding: 15px;">Entendido. Iniciar turno.</button>
+  </div>
+</div>
+
+<!-- MODAL DE FIN DE PARTIDA -->
 <div class="overlay" id="overlay">
   <div class="overlay-card" id="overlay-card"> 
     <h2 id="overlay-title">Título</h2>
@@ -161,6 +200,7 @@
   </div>
 </div>
 
+<!-- MODAL DE INFORMACIÓN (MANUAL) -->
 <div class="overlay" id="info-overlay">
   <div class="overlay-card info-card">
     <button class="close-btn" id="btn-close-info">✖</button>
@@ -173,18 +213,29 @@
   </div>
 </div>
 
+<!-- MODAL DE PAUSA -->
 <div class="overlay" id="pause-overlay">
   <div class="overlay-card info-card" style="max-width: 400px; text-align: center; padding-top: 25px;">
     <button class="close-btn" id="btn-close-pause">✖</button>
     <h2 style="font-family: 'Press Start 2P', cursive; font-size: 1.2rem; margin-bottom: 25px; color: #234252;">EN PAUSA</h2>
-    
     <div style="margin-bottom: 25px; text-align: left;">
       <label for="volume-slider" style="font-weight: bold; color: #2F2A22;">🔊 Volumen del juego:</label>
       <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.4" style="width: 100%; margin-top: 10px; cursor: pointer;">
     </div>
-
     <button class="btn" id="btn-change-song" style="width: 100%; background-color: #CE9234; color: white; margin-bottom: 15px;">🎵 Cambiar Canción</button>
     <button class="btn" id="btn-resume" style="width: 100%; background-color: #4F8B6C; color: white;">▶ Reanudar Juego</button>
+  </div>
+</div>
+
+<!-- MODAL DE ADVERTENCIA PARA ABANDONAR -->
+<div class="overlay" id="confirm-overlay">
+  <div class="overlay-card" style="border: 4px solid #C0594B;"> 
+    <h2 style="color: #C0594B; font-family: 'Press Start 2P', cursive; font-size: 14px; margin-bottom: 20px;">⚠️ ADVERTENCIA</h2>
+    <p id="confirm-text" style="font-weight: bold; margin-bottom: 25px; font-size: 15px; color: #2F2A22;"></p>
+    <div style="display: flex; gap: 10px; justify-content: center;">
+      <button class="btn" id="btn-cancel-skip" style="background-color: #4F8B6C; color: white;">Mejor lo atiendo</button>
+      <button class="btn" id="btn-confirm-skip" style="background-color: #C0594B; color: white;">Abandonar</button>
+    </div>
   </div>
 </div>
 
@@ -192,17 +243,15 @@
   import { CASES } from './data/cases.js';
 
   const RANGES = { resistenciaMax: 10, reputacionMax: 30, reputacionInicial: 25, presupuestoInicial: 100, metaVictoria: 10 };
-  let state = { resistencia: 0, reputacion: RANGES.reputacionInicial, presupuesto: RANGES.presupuestoInicial, caseIndex: 0, attended: 0, correctCount: 0, saludPaciente: 0, maxSaludPaciente: 80, resolved: false, gameOver: false };
+  let state = { resistencia: 0, reputacion: RANGES.reputacionInicial, presupuesto: RANGES.presupuestoInicial, caseIndex: 1, attended: 0, correctCount: 0, saludPaciente: 0, maxSaludPaciente: 80, resolved: false, gameOver: false };
+
+  let playerFullName = "Doctor(a) de turno";
+  let isHardcore = false;
 
   // --- CONTROL DE AUDIO MULTI-CANCIÓN ---
-  // Aquí agregas todas las canciones que quieras que roden durante el juego
   const playlist = [
     new Audio("audio/furniture_shop(musica del gameplay).ogg"),
-    new Audio("audio/8bit Bossa(musica del menu).mp3"),
-    new Audio("audio/two_left_socks )musica de menu).ogg"), 
-    new Audio("audio/Buy Something! (Radio Edit)(musica del juego).mp3"),
-    new Audio("audio/ChamplooEndingWithIntroLowPass(musica final de la tarde).mp3")
-    // Para agregar más: , new Audio("audio/otra_cancion.mp3")
+    new Audio("audio/8bit Bossa(musica del menu).mp3") 
   ];
   let currentTrackIndex = 0;
 
@@ -214,20 +263,17 @@
     bell: new Audio("audio/bell (acierto).wav"),
     pop: new Audio("audio/pop (seleccion).ogg"),
     error: new Audio("audio/error (fallo).wav"),
-    // --- NUEVA CANCIÓN PARA EL MANUAL ---
     explicacion: new Audio("audio/Children's March Theme(musica de explicacion.mp3")
   };
 
-  // Configurar volumen y loops iniciales
   let globalVolume = 0.4;
-  sonidos.menu.loop = true;
-  sonidos.menu.volume = globalVolume;
-  sonidos.explicacion.loop = true; // Hace que la música del manual se repita
+  sonidos.menu.loop = true; sonidos.menu.volume = globalVolume;
+  sonidos.explicacion.loop = true; sonidos.explicacion.volume = globalVolume;
   playlist.forEach(track => { track.loop = true; track.volume = globalVolume; });
 
   function iniciarMusicaGameplay() {
     if (playlist[currentTrackIndex].paused && !state.gameOver) {
-      playlist[currentTrackIndex].play().catch(e => console.log("Audio en espera de interacción"));
+      playlist[currentTrackIndex].play().catch(e => console.log("Audio bloqueado"));
     }
   }
 
@@ -247,185 +293,222 @@
     btnPause: el("btn-pause"), pauseOverlay: el("pause-overlay"), btnClosePause: el("btn-close-pause"), btnResume: el("btn-resume"),
     btnChangeSong: el("btn-change-song"), volumeSlider: el("volume-slider"),
     prepScreen: el("prep-screen"), loadingBar: el("loading-bar"), mainMenu: el("main-menu"), btnStartGame: el("btn-start-game"),
-    playerNameInput: el("player-name-input"), genderM: el("gender-m"), genderF: el("gender-f")
+    playerNameInput: el("player-name-input"), genderM: el("gender-m"), genderF: el("gender-f"), hardcoreMode: el("hardcore-mode"),
+    confirmOverlay: el("confirm-overlay"), confirmText: el("confirm-text"), btnCancelSkip: el("btn-cancel-skip"), btnConfirmSkip: el("btn-confirm-skip"),
+    tutorialOverlay: el("tutorial-overlay"), tutorialDoctorName: el("tutorial-doctor-name"), btnCloseTutorial: el("btn-close-tutorial"),
+    hudClock: el("hud-clock")
   };
 
-  // --- MENÚ PRINCIPAL Y VALIDACIÓN ---
+  // --- MENÚ PRINCIPAL Y LÓGICA DE INICIO ---
   document.body.addEventListener('click', function startMenuMusic() {
     if (!dom.mainMenu.classList.contains("hidden") && sonidos.menu.paused) {
-       sonidos.menu.play().catch(e => console.log("Esperando interacción"));
+       sonidos.menu.play().catch(e=>{});
     }
     document.body.removeEventListener('click', startMenuMusic);
   }, { once: true });
 
   dom.btnStartGame.onclick = () => {
-    sonidos.pop.currentTime = 0;
-    sonidos.pop.play().catch(e => console.log("Audio bloqueado"));
-    
+    sonidos.pop.currentTime = 0; sonidos.pop.play().catch(e=>{});
     const inputName = dom.playerNameInput.value.trim();
     
-    // VALIDACIÓN: Evitar que avance si no hay nombre
     if (inputName === "") {
-      alert("⚠️ Por favor, ingresa tu nombre antes de comenzar el turno.");
+      alert("⚠️ Por favor, ingresa tu nombre antes de comenzar.");
       dom.playerNameInput.focus();
       return;
     }
 
+    // Definir configuración Hardcore y Nombre
+    isHardcore = dom.hardcoreMode.checked;
+    state.presupuesto = isHardcore ? 50 : 100;
+    
     const title = dom.genderF.checked ? "Doctora" : "Doctor";
+    playerFullName = `${title} ${inputName}`;
     
     dom.mainMenu.classList.add("hidden");
     sonidos.menu.pause();
-
     dom.prepScreen.classList.remove("hidden");
     dom.loadingBar.classList.add("animate");
 
     setTimeout(() => {
-      document.getElementById("doctor-subtitle").textContent = `${title}: ${inputName}`;
+      document.getElementById("doctor-subtitle").textContent = playerFullName + (isHardcore ? " [MODO HARDCORE]" : "");
       dom.prepScreen.classList.add("hidden");
-      iniciarMusicaGameplay();
+      dom.tutorialDoctorName.textContent = playerFullName;
+      dom.tutorialOverlay.classList.add("show");
     }, 4000); 
   };
 
-  // --- MENÚ DE PAUSA ---
-  function openPauseMenu() {
+  dom.btnCloseTutorial.onclick = () => {
     sonidos.pop.currentTime = 0; sonidos.pop.play().catch(e=>{});
-    dom.pauseOverlay.classList.add("show");
+    dom.tutorialOverlay.classList.remove("show");
+    
+    // AQUÍ APLICAMOS EL PRESUPUESTO CORRECTO ANTES DE CARGAR EL PACIENTE
+    state.presupuesto = isHardcore ? 50 : 100;
+    
+    iniciarMusicaGameplay();
+    loadCase();
+  };
+
+  // --- RELOJ ---
+  function updateTime() {
+    let currentMins = (8 * 60) + (state.attended * 45); // 08:00 + 45m por paciente
+    let h = Math.floor(currentMins / 60);
+    let m = currentMins % 60;
+    dom.hudClock.textContent = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
   }
 
-  function closePauseMenu() {
-    sonidos.pop.currentTime = 0; sonidos.pop.play().catch(e=>{});
-    dom.pauseOverlay.classList.remove("show");
+  // --- MÁQUINA DE ESCRIBIR (SIN SONIDO) ---
+  let typingInterval;
+  function typeText(element, text, speed = 25) {
+    element.textContent = "";
+    clearInterval(typingInterval);
+    disableOptionButtons(); 
+    let i = 0;
+    typingInterval = setInterval(() => {
+      element.textContent += text.charAt(i);
+      i++;
+      if (i >= text.length) {
+        clearInterval(typingInterval);
+        enableOptionButtons(); 
+      }
+    }, speed);
   }
 
-  dom.btnPause.onclick = openPauseMenu;
-  dom.btnClosePause.onclick = closePauseMenu;
-  dom.btnResume.onclick = closePauseMenu;
+  // --- NÚMEROS FLOTANTES ---
+  function showFloatingNumber(statId, value, invertedColors = false) {
+    if(value === 0) return;
+    const parent = el(statId).closest('.stat');
+    const floatEl = document.createElement('div');
+    let isPositive = value > 0;
+    if (invertedColors) isPositive = !isPositive; 
 
-  // Control de Volumen en tiempo real
+    floatEl.className = `floating-number ${isPositive ? 'positive' : 'negative'}`;
+    floatEl.textContent = (value > 0 ? '+' : '') + value;
+    parent.appendChild(floatEl);
+    setTimeout(() => floatEl.remove(), 1000);
+  }
+
+  // --- MENÚS ---
+  function openPauseMenu() { sonidos.pop.currentTime = 0; sonidos.pop.play().catch(e=>{}); dom.pauseOverlay.classList.add("show"); }
+  function closePauseMenu() { sonidos.pop.currentTime = 0; sonidos.pop.play().catch(e=>{}); dom.pauseOverlay.classList.remove("show"); }
+  dom.btnPause.onclick = openPauseMenu; dom.btnClosePause.onclick = closePauseMenu; dom.btnResume.onclick = closePauseMenu;
+
   dom.volumeSlider.oninput = (e) => {
     globalVolume = parseFloat(e.target.value);
     Object.values(sonidos).forEach(s => s.volume = globalVolume);
     playlist.forEach(t => t.volume = globalVolume);
   };
 
-  // Cambiar de canción
   dom.btnChangeSong.onclick = () => {
     sonidos.pop.currentTime = 0; sonidos.pop.play().catch(e=>{});
     playlist[currentTrackIndex].pause();
     currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
     playlist[currentTrackIndex].currentTime = 0;
-    playlist[currentTrackIndex].play().catch(e => console.log("Audio bloqueado"));
+    playlist[currentTrackIndex].play().catch(e=>{});
   };
 
-  // --- MENÚ INFO ---
   dom.btnInfo.onclick = () => { 
-    sonidos.pop.currentTime = 0; 
-    sonidos.pop.play().catch(e=>{}); 
-    dom.infoOverlay.classList.add("show"); 
-    
-    // Pausar la música de fondo del juego y reproducir la del manual
-    playlist[currentTrackIndex].pause();
-    sonidos.explicacion.play().catch(e => console.log("Audio bloqueado"));
+    sonidos.pop.currentTime = 0; sonidos.pop.play().catch(e=>{}); dom.infoOverlay.classList.add("show"); 
+    playlist[currentTrackIndex].pause(); sonidos.explicacion.play().catch(e=>{});
+  };
+  dom.btnCloseInfo.onclick = () => { 
+    sonidos.pop.currentTime = 0; sonidos.pop.play().catch(e=>{}); dom.infoOverlay.classList.remove("show"); 
+    sonidos.explicacion.pause(); iniciarMusicaGameplay(); 
   };
 
-  dom.btnCloseInfo.onclick = () => { 
-    sonidos.pop.currentTime = 0; 
-    sonidos.pop.play().catch(e=>{}); 
-    dom.infoOverlay.classList.remove("show"); 
-    
-    // Pausar la música del manual y reanudar la del juego
-    sonidos.explicacion.pause();
-    iniciarMusicaGameplay(); 
+  dom.btnTrampa.onclick = () => {
+    if (state.resolved || state.gameOver) return;
+    sonidos.pop.currentTime = 0; sonidos.pop.play().catch(e=>{});
+    dom.confirmText.innerHTML = `¿Estás seguro/a, <b>${playerFullName}</b>, de abandonar a un paciente?<br><br>Perderás la partida automáticamente.`;
+    dom.confirmOverlay.classList.add("show");
   };
+  dom.btnCancelSkip.onclick = () => { sonidos.pop.currentTime = 0; sonidos.pop.play().catch(e=>{}); dom.confirmOverlay.classList.remove("show"); };
+  dom.btnConfirmSkip.onclick = () => { dom.confirmOverlay.classList.remove("show"); trampaSkip(); };
+
   // --- MOTOR DEL JUEGO ---
   function getCurrentCase(){ return CASES[state.caseIndex]; }
   function clamp(value, min, max){ return Math.max(min, Math.min(max, value)); }
 
   function applyGlobalEffects(effects){
     if (!effects) return;
-    if (effects.resistencia) state.resistencia = clamp(state.resistencia + effects.resistencia, 0, RANGES.resistenciaMax);
-    if (effects.reputacion)  state.reputacion  = clamp(state.reputacion  + effects.reputacion,  0, RANGES.reputacionMax);
-    if (effects.presupuesto) state.presupuesto = clamp(state.presupuesto + effects.presupuesto, 0, 999);
-    if (effects.salud)       state.saludPaciente = clamp(state.saludPaciente + effects.salud, 0, state.maxSaludPaciente);
+    let effRep = effects.reputacion || 0;
+    if (effRep < 0 && isHardcore) effRep *= 2;
+
+    if (effects.salud) {
+       state.saludPaciente = clamp(state.saludPaciente + effects.salud, 0, state.maxSaludPaciente);
+       showFloatingNumber("val-salud", effects.salud);
+    }
+    if (effects.resistencia) {
+       state.resistencia = clamp(state.resistencia + effects.resistencia, 0, RANGES.resistenciaMax);
+       showFloatingNumber("val-resistencia", effects.resistencia, true); 
+    }
+    if (effRep) {
+       state.reputacion  = clamp(state.reputacion  + effRep,  0, RANGES.reputacionMax);
+       showFloatingNumber("val-reputacion", effRep);
+    }
+    if (effects.presupuesto) {
+       state.presupuesto = clamp(state.presupuesto + effects.presupuesto, 0, 999);
+       showFloatingNumber("val-presupuesto", effects.presupuesto);
+    }
   }
 
   function renderStats(){
-    el("val-salud").textContent = state.saludPaciente;
-    el("max-salud").textContent = state.maxSaludPaciente;
-    el("bar-salud").style.width = (state.saludPaciente / state.maxSaludPaciente * 100) + "%";
-    el("val-resistencia").textContent = state.resistencia;
-    el("bar-resistencia").style.width = (state.resistencia / RANGES.resistenciaMax * 100) + "%";
-    el("val-reputacion").textContent = state.reputacion;
-    el("bar-reputacion").style.width = (state.reputacion / RANGES.reputacionMax * 100) + "%";
-    el("val-presupuesto").textContent = state.presupuesto;
-    el("bar-presupuesto").style.width = clamp(state.presupuesto, 0, 100) + "%";
-    el("val-salud-paciente-txt").textContent = state.saludPaciente + "/" + state.maxSaludPaciente;
-    el("bar-salud-paciente").style.width = (state.saludPaciente / state.maxSaludPaciente * 100) + "%";
-    dom.hudCaseNum.textContent = state.attended + 1;
-    dom.hudCorrect.textContent = state.correctCount;
-    dom.hudGoal.textContent = RANGES.metaVictoria;
+    el("val-salud").textContent = state.saludPaciente; el("max-salud").textContent = state.maxSaludPaciente; el("bar-salud").style.width = (state.saludPaciente / state.maxSaludPaciente * 100) + "%";
+    el("val-resistencia").textContent = state.resistencia; el("bar-resistencia").style.width = (state.resistencia / RANGES.resistenciaMax * 100) + "%";
+    el("val-reputacion").textContent = state.reputacion; el("bar-reputacion").style.width = (state.reputacion / RANGES.reputacionMax * 100) + "%";
+    el("val-presupuesto").textContent = state.presupuesto; el("bar-presupuesto").style.width = clamp(state.presupuesto, 0, 100) + "%";
+    el("val-salud-paciente-txt").textContent = state.saludPaciente + "/" + state.maxSaludPaciente; el("bar-salud-paciente").style.width = (state.saludPaciente / state.maxSaludPaciente * 100) + "%";
+    dom.hudCaseNum.textContent = state.attended + 1; dom.hudCorrect.textContent = state.correctCount; dom.hudGoal.textContent = RANGES.metaVictoria;
+    updateTime();
   }
 
   function loadCase(){
     if (state.gameOver) return;
     const c = getCurrentCase();
-    state.saludPaciente = c.initialSalud;
-    state.maxSaludPaciente = c.maxSalud;
-    state.resolved = false;
+    state.saludPaciente = c.initialSalud; state.maxSaludPaciente = c.maxSalud; state.resistencia = 0; state.resolved = false;
+    
     dom.caseTag.textContent = "CASO " + c.id;
-    dom.patientText.textContent = c.patientText;
     el("patient-image").src = c.image || "";
     dom.fichaList.innerHTML = c.fichaItems.map(t => "<li>" + t + "</li>").join("");
-    dom.resultBox.classList.remove("show");
-    dom.stamp.classList.remove("play");
-    dom.resultLearning.style.display = "none";
-    dom.btnNext.classList.remove("show");
-    dom.btnTrampa.style.display = "inline-block";
+    dom.resultBox.classList.remove("show"); dom.stamp.classList.remove("play"); dom.resultLearning.style.display = "none";
+    dom.btnNext.classList.remove("show"); dom.btnTrampa.style.display = "inline-block";
+    
     renderStats();
     renderMainOptions(c);
+    
+    typeText(dom.patientText, c.patientText);
   }
 
   function renderMainOptions(c){
     dom.optionsBox.innerHTML = "";
     c.options.forEach(opt => {
       const btn = document.createElement("button");
-      btn.className = "option-btn";
-      btn.innerHTML = '<span class="opt-letter">' + opt.id + '</span>' + opt.label;
+      btn.className = "option-btn"; btn.innerHTML = '<span class="opt-letter">' + opt.id + '</span>' + opt.label;
       btn.onclick = () => handleMainOption(c, opt);
       dom.optionsBox.appendChild(btn);
     });
   }
 
-  function disableOptionButtons(){
-    dom.optionsBox.querySelectorAll(".option-btn").forEach(b => b.disabled = true);
-  }
+  function disableOptionButtons(){ dom.optionsBox.querySelectorAll(".option-btn").forEach(b => b.disabled = true); }
+  function enableOptionButtons(){ dom.optionsBox.querySelectorAll(".option-btn").forEach(b => b.disabled = false); }
 
   function handleMainOption(c, opt){
     if (state.resolved) return;
     sonidos.pop.currentTime = 0; sonidos.pop.play().catch(e=>{});
-    iniciarMusicaGameplay(); 
-    disableOptionButtons();
-    applyGlobalEffects(opt.effects);
+    iniciarMusicaGameplay(); disableOptionButtons(); applyGlobalEffects(opt.effects);
     if (opt.exam){ showExamResult(c, opt); } else { finalizeCase(opt.doctorLine, opt.patientLine, opt.resultLines, opt.correct, c.learning); }
     renderStats();
   }
 
   function showExamResult(c, opt){
-    dom.resultBox.classList.add("show");
-    dom.stamp.classList.remove("play");
-    dom.resultDoctor.textContent = opt.doctorLine || "";
-    dom.resultPatient.textContent = opt.patientLine || "";
-    dom.resultList.innerHTML = opt.exam.resultLines.map(t => "<li>" + t + "</li>").join("");
-    dom.resultLearning.style.display = "none";
+    dom.resultBox.classList.add("show"); dom.stamp.classList.remove("play");
+    dom.resultDoctor.textContent = opt.doctorLine || ""; dom.resultPatient.textContent = opt.patientLine || "";
+    dom.resultList.innerHTML = opt.exam.resultLines.map(t => "<li>" + t + "</li>").join(""); dom.resultLearning.style.display = "none";
     dom.optionsBox.innerHTML = "";
-    const note = document.createElement("p");
-    note.style.fontSize = "13px"; note.style.color = "var(--ink-soft)"; note.style.margin = "0 0 6px"; note.textContent = "Con estos resultados, ¿qué hace ahora?";
+    const note = document.createElement("p"); note.style.fontSize = "13px"; note.style.color = "var(--ink-soft)"; note.style.margin = "0 0 6px"; note.textContent = "Con estos resultados, ¿qué hace ahora?";
     dom.optionsBox.appendChild(note);
 
     opt.exam.followUp.forEach(fu => {
-      const btn = document.createElement("button");
-      btn.className = "option-btn";
-      btn.innerHTML = '<span class="opt-letter">' + fu.id + '</span>' + fu.label;
+      const btn = document.createElement("button"); btn.className = "option-btn"; btn.innerHTML = '<span class="opt-letter">' + fu.id + '</span>' + fu.label;
       btn.onclick = () => {
         sonidos.pop.currentTime = 0; sonidos.pop.play().catch(e=>{});
         disableOptionButtons(); iniciarMusicaGameplay(); applyGlobalEffects(fu.effects);
@@ -438,8 +521,7 @@
   function finalizeCase(doctorLine, patientLine, resultLines, correct, learning){
     state.resolved = true; state.attended += 1; if (correct) state.correctCount += 1;
     if (correct) { sonidos.bell.currentTime = 0; sonidos.bell.play().catch(e=>{}); } else { sonidos.error.currentTime = 0; sonidos.error.play().catch(e=>{}); }
-    dom.resultBox.classList.add("show");
-    dom.resultDoctor.textContent = doctorLine || ""; dom.resultPatient.textContent = patientLine || "";
+    dom.resultBox.classList.add("show"); dom.resultDoctor.textContent = doctorLine || ""; dom.resultPatient.textContent = patientLine || "";
     dom.resultList.innerHTML = (resultLines || []).map(t => "<li>" + t + "</li>").join("");
     if (learning){ dom.resultLearningText.textContent = learning; dom.resultLearning.style.display = "block"; }
     dom.stamp.textContent = correct ? "✓ Correcto" : "✗ Revisar";
@@ -459,9 +541,25 @@
 
   function endGame(won, title, text){
     state.gameOver = true; detenerTodosLosSonidos();
-    if (won) { sonidos.victoria.play().catch(e=>{}); } else { sonidos.derrota.play().catch(e=>{}); }
+    
+    // SISTEMA DE CALIFICACIÓN (RANGOS)
+    let scoreText = text;
+    if (won) { 
+      sonidos.victoria.play().catch(e=>{}); 
+      let score = state.presupuesto + state.reputacion;
+      let rank = "C";
+      if (score >= 100 && isHardcore) rank = "S+";
+      else if (score >= 90) rank = "S";
+      else if (score >= 60) rank = "A";
+      else if (score >= 30) rank = "B";
+      scoreText += `<br><br><span class="rank-display">CALIFICACIÓN: ${rank}</span>`;
+    } else { 
+      sonidos.derrota.play().catch(e=>{}); 
+      scoreText += `<br><br><span class="rank-display" style="color:#C0594B">CALIFICACIÓN: F</span>`;
+    }
+    
     dom.overlayCard.classList.remove("win", "lose"); dom.overlayCard.classList.add(won ? "win" : "lose");
-    dom.overlayTitle.textContent = title; dom.overlayText.textContent = text; dom.overlay.classList.add("show");
+    dom.overlayTitle.textContent = title; dom.overlayText.innerHTML = scoreText; dom.overlay.classList.add("show");
   }
 
   function nextCase(){
@@ -470,19 +568,16 @@
     iniciarMusicaGameplay(); state.caseIndex += 1; loadCase();
   }
 
-  function trampaSkip(){
-    if (state.resolved || state.gameOver) return;
-    endGame(false, "Juramento incumplido", "Pasaste al siguiente paciente sin atenderlo.");
-  }
+  function trampaSkip(){ endGame(false, "Juramento incumplido", "Decidiste abandonar al paciente en horario de trabajo. Como médico(a) juraste atender a todos tus pacientes."); }
 
   function restartGame(){
     detenerTodosLosSonidos();
-    state = { resistencia: 0, reputacion: RANGES.reputacionInicial, presupuesto: RANGES.presupuestoInicial, caseIndex: 0, attended: 0, correctCount: 0, saludPaciente: 0, maxSaludPaciente: 80, resolved: false, gameOver: false };
-    dom.overlay.classList.remove("show"); dom.mainMenu.classList.remove("hidden"); dom.playerNameInput.value = ""; currentTrackIndex = 0;
+    state = { resistencia: 0, reputacion: RANGES.reputacionInicial, presupuesto: isHardcore ? 50 : RANGES.presupuestoInicial, caseIndex: 0, attended: 0, correctCount: 0, saludPaciente: 0, maxSaludPaciente: 80, resolved: false, gameOver: false };
+    dom.overlay.classList.remove("show"); dom.mainMenu.classList.remove("hidden"); dom.playerNameInput.value = ""; currentTrackIndex = 0; 
     loadCase();
   }
 
-  dom.btnNext.onclick = nextCase; dom.btnTrampa.onclick = trampaSkip; el("btn-restart").onclick = restartGame;
+  dom.btnNext.onclick = nextCase; el("btn-restart").onclick = restartGame;
   dom.manualToggle.onclick = () => {
     dom.manual.classList.toggle("show");
     dom.manualToggle.textContent = dom.manual.classList.contains("show") ? "Ocultar manual del médico" : "Ver manual del médico";
